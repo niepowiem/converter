@@ -1,7 +1,7 @@
 import sys
 import os
 import json
-import yaml  # <- nowa biblioteka
+import yaml
 
 SUPPORTED_FORMATS = ['.json', '.xml', '.yml', '.yaml']
 
@@ -33,11 +33,8 @@ def load_json_file(path):
             data = json.load(file)
             print("✅ Plik JSON poprawnie wczytany.")
             return data
-    except FileNotFoundError:
-        print(f"❌ Nie znaleziono pliku: {path}")
-        sys.exit(1)
-    except json.JSONDecodeError as e:
-        print(f"❌ Błąd składni JSON: {e}")
+    except Exception as e:
+        print(f"❌ Błąd przy wczytywaniu JSON: {e}")
         sys.exit(1)
 
 
@@ -47,14 +44,8 @@ def load_yaml_file(path):
             data = yaml.safe_load(file)
             print("✅ Plik YAML poprawnie wczytany.")
             return data
-    except FileNotFoundError:
-        print(f"❌ Nie znaleziono pliku: {path}")
-        sys.exit(1)
-    except yaml.YAMLError as e:
-        print(f"❌ Błąd składni YAML: {e}")
-        sys.exit(1)
     except Exception as e:
-        print(f"❌ Inny błąd przy wczytywaniu YAML: {e}")
+        print(f"❌ Błąd przy wczytywaniu YAML: {e}")
         sys.exit(1)
 
 
@@ -68,19 +59,31 @@ def save_json_file(path, data):
         sys.exit(1)
 
 
+def save_yaml_file(path, data):
+    try:
+        with open(path, 'w', encoding='utf-8') as file:
+            yaml.dump(data, file, sort_keys=False, allow_unicode=True)
+            print(f"✅ Dane zapisane do pliku YAML: {path}")
+    except Exception as e:
+        print(f"❌ Błąd zapisu do pliku YAML: {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     input_file, output_file = parse_arguments()
 
+    # Wczytaj dane
     if input_file.endswith(".json"):
         data = load_json_file(input_file)
     elif input_file.endswith(".yml") or input_file.endswith(".yaml"):
         data = load_yaml_file(input_file)
     else:
-        print("ℹ️ W tej wersji obsługiwane są tylko wejściowe pliki JSON i YAML.")
+        print("❌ Ten typ pliku wejściowego nie jest jeszcze obsługiwany.")
         sys.exit(1)
 
+    # Zapisz dane
     if output_file.endswith(".json"):
         save_json_file(output_file, data)
+    elif output_file.endswith(".yml") or output_file.endswith(".yaml"):
+        save_yaml_file(output_file, data)
     else:
-        print("ℹ️ W tej wersji obsługiwany jest tylko zapis do JSON.")
-        sys.exit(1)
