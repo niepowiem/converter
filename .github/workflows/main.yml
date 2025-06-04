@@ -1,37 +1,40 @@
-name: Build Windows Executable
+name: Build and Upload Executable
 
 on:
-  schedule:
-    - cron: '0 9 * * 1'  # ⏰ co poniedziałek o 9:00 UTC
   push:
-    branches: [master]   # 🚀 po pushu na master
-  workflow_dispatch:     # 🖱️ ręczne uruchomienie
+    branches:
+      - main
+  schedule:
+    - cron: '0 9 * * 1'  # co poniedziałek o 9:00 UTC
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
-    shell: powershell
+    defaults:
+      run:
+        shell: powershell
 
     steps:
-      - name: 📥 Checkout repo
+      - name: Checkout Repo
         uses: actions/checkout@v3
 
-      - name: 🐍 Setup Python
+      - name: Install Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.x'
 
-      - name: 📦 Install dependencies
+      - name: Install Dependecies
         run: |
-          python -m pip install --upgrade pip
           ./installResources.ps1
-
-      - name: 🔧 Build EXE using PyInstaller
+      - name: Install PyInstaller
         run: |
-          pyinstaller --onefile --noconsole ui_main.py
-
-      - name: 📤 Upload artifact (.exe)
-        uses: actions/upload-artifact@v3
+          pip install pyinstaller
+      - name: Build Exec
+        run: |
+          pyinstaller --onefile --noconsole Task1_args.py
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: converter-exe
+          name: converter.exe
           path: dist/ui_main.exe
