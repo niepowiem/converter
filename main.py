@@ -2,6 +2,7 @@ import sys
 import os
 import json
 import yaml
+import xmltodict  # ← NOWOŚĆ
 
 SUPPORTED_FORMATS = ['.json', '.xml', '.yml', '.yaml']
 
@@ -31,10 +32,10 @@ def load_json_file(path):
     try:
         with open(path, 'r', encoding='utf-8') as file:
             data = json.load(file)
-            print("✅ Plik JSON poprawnie wczytany.")
+            print("✅ JSON wczytany.")
             return data
     except Exception as e:
-        print(f"❌ Błąd przy wczytywaniu JSON: {e}")
+        print(f"❌ Błąd JSON: {e}")
         sys.exit(1)
 
 
@@ -42,10 +43,27 @@ def load_yaml_file(path):
     try:
         with open(path, 'r', encoding='utf-8') as file:
             data = yaml.safe_load(file)
-            print("✅ Plik YAML poprawnie wczytany.")
+            print("✅ YAML wczytany.")
             return data
     except Exception as e:
-        print(f"❌ Błąd przy wczytywaniu YAML: {e}")
+        print(f"❌ Błąd YAML: {e}")
+        sys.exit(1)
+
+
+def load_xml_file(path):
+    try:
+        with open(path, 'r', encoding='utf-8') as file:
+            data = xmltodict.parse(file.read())
+            print("✅ XML wczytany.")
+            return data
+    except FileNotFoundError:
+        print(f"❌ Nie znaleziono pliku XML: {path}")
+        sys.exit(1)
+    except xmltodict.expat.ExpatError as e:
+        print(f"❌ Błąd składni XML: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Błąd XML: {e}")
         sys.exit(1)
 
 
@@ -53,9 +71,9 @@ def save_json_file(path, data):
     try:
         with open(path, 'w', encoding='utf-8') as file:
             json.dump(data, file, indent=4, ensure_ascii=False)
-            print(f"✅ Dane zapisane do pliku JSON: {path}")
+            print(f"✅ Zapisano jako JSON: {path}")
     except Exception as e:
-        print(f"❌ Błąd zapisu do pliku JSON: {e}")
+        print(f"❌ Błąd zapisu JSON: {e}")
         sys.exit(1)
 
 
@@ -63,27 +81,31 @@ def save_yaml_file(path, data):
     try:
         with open(path, 'w', encoding='utf-8') as file:
             yaml.dump(data, file, sort_keys=False, allow_unicode=True)
-            print(f"✅ Dane zapisane do pliku YAML: {path}")
+            print(f"✅ Zapisano jako YAML: {path}")
     except Exception as e:
-        print(f"❌ Błąd zapisu do pliku YAML: {e}")
+        print(f"❌ Błąd zapisu YAML: {e}")
         sys.exit(1)
 
 
 if __name__ == "__main__":
     input_file, output_file = parse_arguments()
 
-    # Wczytaj dane
+    # Wczytanie danych
     if input_file.endswith(".json"):
         data = load_json_file(input_file)
-    elif input_file.endswith(".yml") or input_file.endswith(".yaml"):
+    elif input_file.endswith((".yml", ".yaml")):
         data = load_yaml_file(input_file)
+    elif input_file.endswith(".xml"):
+        data = load_xml_file(input_file)
     else:
-        print("❌ Ten typ pliku wejściowego nie jest jeszcze obsługiwany.")
+        print("❌ Format wejściowy nieobsługiwany.")
         sys.exit(1)
 
-    # Zapisz dane
+    # Zapis danych (na razie tylko JSON/YAML)
     if output_file.endswith(".json"):
         save_json_file(output_file, data)
-    elif output_file.endswith(".yml") or output_file.endswith(".yaml"):
+    elif output_file.endswith((".yml", ".yaml")):
         save_yaml_file(output_file, data)
     else:
+        print("❌ Ten typ pliku wyjściowego nie jest jeszcze obsługiwany.")
+        sys.exit(1)
