@@ -32,9 +32,9 @@ jobs:
           pip install pyinstaller
       - name: Build Exec
         run: |
-          pyinstaller --onefile --noconsole Task1_args.py
+          pyinstaller --onefile --noconsole main_ui.py
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: converter.exe
-          path: dist/ui_main.exe
+          path: dist/main_ui.exe
