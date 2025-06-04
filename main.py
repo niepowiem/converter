@@ -2,12 +2,11 @@ import sys
 import os
 import json
 
-# Obsługiwane formaty
 SUPPORTED_FORMATS = ['.json', '.xml', '.yml', '.yaml']
 
 def parse_arguments():
     if len(sys.argv) != 3:
-        print("❌ Błąd: Należy podać dokładnie dwa argumenty: ścieżkę do pliku wejściowego i wyjściowego.")
+        print("❌ Błąd: Podaj dwa argumenty: ścieżkę do pliku wejściowego i wyjściowego.")
         sys.exit(1)
 
     input_path = sys.argv[1]
@@ -17,11 +16,11 @@ def parse_arguments():
     _, output_ext = os.path.splitext(output_path)
 
     if input_ext.lower() not in SUPPORTED_FORMATS:
-        print(f"❌ Błąd: Format wejściowy {input_ext} nie jest obsługiwany.")
+        print(f"❌ Nieobsługiwany format wejściowy: {input_ext}")
         sys.exit(1)
 
     if output_ext.lower() not in SUPPORTED_FORMATS:
-        print(f"❌ Błąd: Format wyjściowy {output_ext} nie jest obsługiwany.")
+        print(f"❌ Nieobsługiwany format wyjściowy: {output_ext}")
         sys.exit(1)
 
     return input_path, output_path
@@ -34,7 +33,7 @@ def load_json_file(path):
             print("✅ Plik JSON poprawnie wczytany.")
             return data
     except FileNotFoundError:
-        print(f"❌ Błąd: Nie znaleziono pliku: {path}")
+        print(f"❌ Nie znaleziono pliku: {path}")
         sys.exit(1)
     except json.JSONDecodeError as e:
         print(f"❌ Błąd składni JSON: {e}")
@@ -44,9 +43,27 @@ def load_json_file(path):
         sys.exit(1)
 
 
+def save_json_file(path, data):
+    try:
+        with open(path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, indent=4, ensure_ascii=False)
+            print(f"✅ Dane zapisane do pliku JSON: {path}")
+    except Exception as e:
+        print(f"❌ Błąd zapisu do pliku JSON: {e}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     input_file, output_file = parse_arguments()
 
-    # Jeśli wejściowy to JSON – wczytaj
     if input_file.endswith(".json"):
-        json_data = load_json_file(input_file)
+        data = load_json_file(input_file)
+    else:
+        print("ℹ️ W tej wersji obsługiwany jest tylko odczyt z JSON.")
+        sys.exit(1)
+
+    if output_file.endswith(".json"):
+        save_json_file(output_file, data)
+    else:
+        print("ℹ️ W tej wersji obsługiwany jest tylko zapis do JSON.")
+        sys.exit(1)
