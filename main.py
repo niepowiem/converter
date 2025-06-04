@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import yaml  # <- nowa biblioteka
 
 SUPPORTED_FORMATS = ['.json', '.xml', '.yml', '.yaml']
 
@@ -38,8 +39,22 @@ def load_json_file(path):
     except json.JSONDecodeError as e:
         print(f"❌ Błąd składni JSON: {e}")
         sys.exit(1)
+
+
+def load_yaml_file(path):
+    try:
+        with open(path, 'r', encoding='utf-8') as file:
+            data = yaml.safe_load(file)
+            print("✅ Plik YAML poprawnie wczytany.")
+            return data
+    except FileNotFoundError:
+        print(f"❌ Nie znaleziono pliku: {path}")
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        print(f"❌ Błąd składni YAML: {e}")
+        sys.exit(1)
     except Exception as e:
-        print(f"❌ Inny błąd przy wczytywaniu JSON: {e}")
+        print(f"❌ Inny błąd przy wczytywaniu YAML: {e}")
         sys.exit(1)
 
 
@@ -58,8 +73,10 @@ if __name__ == "__main__":
 
     if input_file.endswith(".json"):
         data = load_json_file(input_file)
+    elif input_file.endswith(".yml") or input_file.endswith(".yaml"):
+        data = load_yaml_file(input_file)
     else:
-        print("ℹ️ W tej wersji obsługiwany jest tylko odczyt z JSON.")
+        print("ℹ️ W tej wersji obsługiwane są tylko wejściowe pliki JSON i YAML.")
         sys.exit(1)
 
     if output_file.endswith(".json"):
